@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from movie_app.serializers import DirectorSerializer, MovieSerializer, ReviewSerializer
+from movie_app.serializers import DirectorSerializer, MovieSerializer, MovieAndReviewsSerializer, ReviewSerializer
 from . import models
 
 
@@ -35,7 +35,7 @@ def directors_detail_api_view(request, id):
 # MOVIE
 @api_view(["GET"])
 def movies_list_api_view(request):
-   movies = models.Movie.objects.all()
+   movies = models.Movie.objects.select_related('director').prefetch_related('reviews').all() # select для foreignkey, prefetch для manytomany (btw лучше foreignkey, он не создает доп таблицу - меньше нагрузки)
    
    data = MovieSerializer(instance=movies, many=True).data
    
@@ -54,6 +54,12 @@ def movies_detail_api_view(request, id):
    
    return Response(data=data)
 
+# для movies/reviews
+@api_view(['GET'])
+def movie_reviews_list(request):
+   movies = models.Movie.objects.select_related('director').prefetch_related('reviews').all()
+   serializer = MovieAndReviewsSerializer(movies, many=True)
+   return Response(serializer.data)
 
 # REVIEW
 @api_view(["GET"])
