@@ -42,6 +42,6 @@ class Review(models.Model):
    def __str__(self):
       return self.text
    
-   @property
-   def movie_name(self):
-      return self.movie.title if self.movie else None # если бы связь была ManyToMany, тогда: return [i.title for i in self.movie.all()]
+   # @property
+   # def movie_name(self):
+   #    return self.movie.title if self.movie else None # если бы связь была ManyToMany, тогда: return [i.title for i in self.movie.all()]

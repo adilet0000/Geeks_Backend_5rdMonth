@@ -15,19 +15,21 @@ class DirectorSerializer(serializers.ModelSerializer):
       return object.movies.count()
    
    
-   
-   
+
 class MovieSerializer(serializers.ModelSerializer):
-   director = serializers.SerializerMethodField() # для показа поля name вместо id
+   director = serializers.PrimaryKeyRelatedField(
+      queryset=models.Director.objects.all()  # для POST-запросов id
+   )
+   director_name = serializers.CharField(source='director.name', read_only=True)  # для GET-запросов имя
    
    class Meta:
       model = models.Movie
-      fields = "id title description duration director get_reviews rating".split()
-   
-   def get_director(self, object): # для показа поля name вместо id
-      if object.director.id: # подстраховочка
-         return object.director.name
-      return None
+      fields = ['id', 'title', 'description', 'duration', 'director', 'director_name', 'get_reviews']
+
+   # def get_director(self, object): # для показа поля name вместо id
+   #    if object.director.id: # подстраховочка
+   #       return object.director.name
+   #    return None
 
 class MovieAndReviewsSerializer(serializers.ModelSerializer):
    rating = serializers.SerializerMethodField()
@@ -46,11 +48,11 @@ class MovieAndReviewsSerializer(serializers.ModelSerializer):
       
       
 class ReviewSerializer(serializers.ModelSerializer):
-   # movie = serializers.SerializerMethodField() # лучше это делать в моделях, так как их можно будет переиспользовать
-   
-   class Meta:
-      model = models.Review
-      fields = "id text stars movie_name".split()
-      
-   # def get_movie(self,object):
-   #    return object.movie.title
+    movie = serializers.PrimaryKeyRelatedField(
+        queryset=models.Movie.objects.all()  # Для POST и PUT (ожидаем ID фильма)
+    )
+    movie_title = serializers.CharField(source='movie.title', read_only=True)  # Для GET (выводим название фильма)
+
+    class Meta:
+        model = models.Review
+        fields = ['id', 'text', 'stars', 'movie', 'movie_title']
